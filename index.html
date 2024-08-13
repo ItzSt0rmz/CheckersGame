@@ -31,16 +31,16 @@
             background-color: white;
         }
         .red-piece {
-            color: red;
+            color: white;
         }
         .black-piece {
-            color: gray;
+            color: dark blue;
         }
         .red-king{
-            color: red;
+            color: dark blue;
         }
         .black-king{
-            color: gray;
+            color: white;
         }
         .selected {
             background-color: DodgerBlue;
@@ -92,7 +92,7 @@
                 } else {
                     clearSelection();
                 }
-            } else if (cell.classList.contains(`${currentPlayer}-piece`)) {
+            } else if ( (cell.classList.contains(`${currentPlayer}-piece`)) || (cell.classList.contains(`${currentPlayer}-king`))) {
                 selectedPiece = [row, col];
                 cell.classList.add('selected');
             }
@@ -101,6 +101,7 @@
         function isValidMove(fromRow, fromCol, toRow, toCol) {
             const fromCell = document.getElementById(`${fromRow}-${fromCol}`);
             const toCell = document.getElementById(`${toRow}-${toCol}`);
+            const isKing = fromCell.classList.contains(`${currentPlayer}-king`);
 
             if (toCell.className !== 'black' || toCell.innerHTML) {
                 return false;
@@ -111,6 +112,10 @@
             const direction = currentPlayer === 'red' ? 1 : -1;
 
             if (rowDiff === direction && colDiff === 1) {
+                return true;
+            }
+            
+            if (isKing === true && (colDiff === 1 || colDiff === -1)) {
                 return true;
             }
 
@@ -125,18 +130,32 @@
                     return true;
                 }
             }
+            
+            if (isKing === true && (colDiff === 2 || colDiff === -2)) {
+                const middleRow = (fromRow + toRow) / 2;
+                const middleCol = (fromCol + toCol) / 2;
+                const middleCell = document.getElementById(`${middleRow}-${middleCol}`);
 
+                if (middleCell.classList.contains(currentPlayer === 'red' ? 'black-piece' : 'red-piece')) { // BUG: can only jump pieces, not kings
+                    middleCell.innerHTML = '';
+                    middleCell.classList.remove('red-piece', 'black-piece', 'red-king', 'black-king');
+                    return true;
+                }
+            }
+            
             return false;
         }
 
         function movePiece(fromRow, fromCol, toRow, toCol) {
             const fromCell = document.getElementById(`${fromRow}-${fromCol}`);
             const toCell = document.getElementById(`${toRow}-${toCol}`);
-
+            const isKing = fromCell.classList.contains(`${currentPlayer}-king`);
+          
             toCell.innerHTML = fromCell.innerHTML;
-            toCell.classList.add(`${currentPlayer}-piece`);
+            if (isKing === true) {toCell.classList.add(`${currentPlayer}-king`);}
+            if (isKing === false) {toCell.classList.add(`${currentPlayer}-piece`);}
             fromCell.innerHTML = '';
-            fromCell.classList.remove('selected', `${currentPlayer}-piece`);
+            fromCell.classList.remove('selected', `${currentPlayer}-piece`, `${currentPlayer}-king`);
 
             if ((currentPlayer === 'red' && toRow === boardSize - 1) || (currentPlayer === 'black' && toRow === 0)) {
                 toCell.classList.remove('red-piece', 'black-piece');
@@ -151,8 +170,6 @@
             }
             
             // add double jump option
-
-            // add king movement options
 
             switchPlayer();
         }
