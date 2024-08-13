@@ -25,26 +25,25 @@
             cursor: pointer;
         }
         .black {
-            background-color: #444;
+            background-color: gold;
         }
         .white {
-            background-color: #eee;
+            background-color: white;
         }
         .red-piece {
             color: red;
         }
         .black-piece {
-            color: black;
+            color: gray;
         }
-        .king {
-            content: "♚";
-            top: 0;
-            right: 0;
-            font-size: 18px;
-            color: gold;
+        .red-king{
+            color: red;
+        }
+        .black-king{
+            color: gray;
         }
         .selected {
-            background-color: blue;
+            background-color: DodgerBlue;
         }
     </style>
 </head>
@@ -67,10 +66,10 @@
 
                     if (td.className === 'black') {
                         if (row < 3) {
-                            td.innerHTML = '&#x26AB;'; // Red piece
+                            td.innerHTML = '&#128309;'; // Blue piece
                             td.classList.add('red-piece');
                         } else if (row > 4) {
-                            td.innerHTML = '&#x26AA;'; // Black piece
+                            td.innerHTML = '&#x26AA;'; // White piece
                             td.classList.add('black-piece');
                         }
                     }
@@ -140,10 +139,20 @@
             fromCell.classList.remove('selected', `${currentPlayer}-piece`);
 
             if ((currentPlayer === 'red' && toRow === boardSize - 1) || (currentPlayer === 'black' && toRow === 0)) {
-                toCell.innerHTML = '&#x265B;'; // King
+                toCell.classList.remove('red-piece', 'black-piece');
+                if (currentPlayer === 'red') {
+                  toCell.innerHTML = '&#9813;'; // red king
+                  toCell.classList.add('red-king');
+                }
+                if (currentPlayer === 'black') {
+                  toCell.innerHTML = '&#9813;'; // black king
+                  toCell.classList.add('black-king');
+                }
             }
             
             // add double jump option
+
+            // add king movement options
 
             switchPlayer();
         }
@@ -162,9 +171,7 @@
             clearSelection();
         }
         
-        // function gameOver()
-        
-        //
+        // function gameOver
 
         createBoard();
     </script>
