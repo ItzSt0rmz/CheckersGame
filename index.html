@@ -1,21 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkers Game</title>
-    <style>
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Checkers Game</title>
+
+        <!--CSS Section------- -->
+        <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
-            background-color: #383838;
+            background-color: #ddd9de;
+            font-family: Jazz LET, fantasy;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-x: auto;
         }
+
+        .title {
+            color: #292421;
+            font-size: 45px;
+            font-weight: 900;
+            font-variant: small-caps;
+            text-shadow: 2px 2px white;
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .main-container {
+            width: 100%;
+            overflow: hidden;
+            overflow-x: auto;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        /*boxes*/
+        .left-container {
+            width: 250px;
+            display: inline-block;
+            margin-right: 20px;
+            vertical-align: top;
+
+        }
+
+        .box {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 15px;
+            padding: 20px;
+            height: 150px;
+            margin-bottom: 20px;
+        }
+
+        /*Board(•‿•)*/
         table {
             border-collapse: collapse;
+            width: 445px;
+            height: auto;
+            box-shadow: 0px 0px 15px 5px rgba(92, 73, 61);
         }
+
+        .board-container {
+            width: 445px;
+            display: inline-block;
+            vertical-align: top;
+            border: 15px solid #3d3128;
+            border-radius: 5px;
+            background-color: #261b15;
+        }
+
         td {
             width: 50px;
             height: 50px;
@@ -23,39 +78,116 @@
             vertical-align: middle;
             font-size: 24px;
             cursor: pointer;
+            border: 1px;
+            border-radius: 2px;
         }
-        .black {
-            background-color: gold;
-        }
-        .white {
-            background-color: white;
-        }
-        .red-piece {
-            color: white;
-        }
-        .black-piece {
-            color: dark blue;
-        }
-        .red-king{
-            color: dark blue;
-        }
-        .black-king{
-            color: white;
-        }
-        .selected {
-            background-color: DodgerBlue;
-        }
-    </style>
-</head>
-<body>
-    <table id="board"></table>
 
-    <script>
+        .black {
+            background-color: #42342c;
+        }
+
+        .white {
+            background-color: #967763;
+        }
+
+        .red-piece {
+            /*ajustar*/
+            color: #bd615c;
+        }
+
+        .black-piece {
+            /*ajustar*/
+            color: gray;
+        }
+
+        .red-king {
+            color: #d14e47;
+        }
+
+        .black-king {
+            color: #d14e47;
+        }
+
+        .selected {
+            background-color: #261b15;
+        }
+        /*Captures container....*/
+        .captured-container {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            border: 1px solid #ccc;
+            background-color: #ddd;
+        }
+
+        
+    </style>
+        <!--End of CSS Section -->
+
+    </head>
+
+    <body>
+
+        <!--HTML body/base section -->
+        <div class="title">
+            <center>
+                Checkers Game
+            </center>
+        </div>
+        <div class="main-container">
+            <!--Boxs -->
+            <div class="left-container">
+                <!-- box 1...-->
+                <div class="box">
+                    <!--Counter -->
+                    White Pieces Taken: <span
+                        id="blackCapturedCount">0</span><br>
+
+                    <!--Visual -->
+                    <div id="blackCapturedContainer"
+                        class="captured-container"></div>
+
+                </div>
+
+                <!--box2... -->
+                <div class="box">
+                    <!--Counter -->
+                    Blue Pieces Taken: <span id="redCapturedCount">0</span><br>
+
+                    <!--Visual -->
+                    <div id="redCapturedContainer"
+                        class="captured-container"></div>
+
+                </div>
+            </div>
+
+            <!--Board -->
+            <div class="board-container">
+                <table id="board"></table>
+            </div>
+        </div>
+
+        <!--Java Section --------- -->
+        <script>
         const boardSize = 8;
         const board = document.getElementById('board');
         let selectedPiece = null;
         let currentPlayer = 'red';
+        let doubleJumpAvailable = false; 
+        let isFirstMove = true;
+        let pieceFocus = false;
+        //Edited code           =======>
+        let redCaptured = 0;
+        let blackCaptured = 0;
 
+
+        //important .......
+        const pieces = {
+        red: { symbol: '&#128309;', count: redCaptured },
+        black: { symbol: '&#x26AA;', count: blackCaptured },
+        }; 
+
+        //board
         function createBoard() {
             for (let row = 0; row < boardSize; row++) {
                 const tr = document.createElement('tr');
@@ -65,12 +197,17 @@
                     td.className = (row + col) % 2 === 0 ? 'white' : 'black';
 
                     if (td.className === 'black') {
-                        if (row < 3) {
-                            td.innerHTML = '&#128309;'; // Blue piece
-                            td.classList.add('red-piece');
-                        } else if (row > 4) {
-                            td.innerHTML = '&#x26AA;'; // White piece
-                            td.classList.add('black-piece');
+                        //Edited                =========>
+                        if (row < 3) 
+                        {
+                        td.innerHTML = pieces.red.symbol; // Red piece
+                        td.classList.add('red-piece');
+                        
+                        }else if (row > 4) 
+                        {
+                        td.innerHTML = pieces.black.symbol; // Black piece
+                        td.classList.add('black-piece');
+                        
                         }
                     }
 
@@ -83,8 +220,10 @@
 
         function handleCellClick(row, col) {
             const cell = document.getElementById(`${row}-${col}`);
-
-            if (selectedPiece) {
+            
+            //add selection lock for double jumps
+            
+           if (selectedPiece) {
                 const [selectedRow, selectedCol] = selectedPiece;
                 if (isValidMove(selectedRow, selectedCol, row, col)) {
                     movePiece(selectedRow, selectedCol, row, col);
@@ -98,7 +237,7 @@
             }
         }
 
-        function isValidMove(fromRow, fromCol, toRow, toCol) {
+       function isValidMove(fromRow, fromCol, toRow, toCol, takePiece = true) {
             const fromCell = document.getElementById(`${fromRow}-${fromCol}`);
             const toCell = document.getElementById(`${toRow}-${toCol}`);
             const isKing = fromCell.classList.contains(`${currentPlayer}-king`);
@@ -111,11 +250,11 @@
             const colDiff = Math.abs(toCol - fromCol);
             const direction = currentPlayer === 'red' ? 1 : -1;
 
-            if (rowDiff === direction && colDiff === 1) {
+            if (rowDiff === direction && colDiff === 1 && isFirstMove) {
                 return true;
             }
             
-            if (isKing === true && (colDiff === 1 || colDiff === -1)) {
+            if (isKing === true && (colDiff === 1 || colDiff === -1) && isFirstMove) {
                 return true;
             }
 
@@ -125,9 +264,37 @@
                 const middleCell = document.getElementById(`${middleRow}-${middleCol}`);
 
                 if (middleCell.classList.contains(currentPlayer === 'red' ? 'black-piece' : 'red-piece')) {
-                    middleCell.innerHTML = '';
-                    middleCell.classList.remove('red-piece', 'black-piece');
-                    return true;
+                    if (takePiece) {
+                      middleCell.innerHTML = '';
+                      middleCell.classList.remove('red-piece', 'black-piece');
+                    }
+                    
+                    if (currentPlayer === 'red') {blackCaptured++;}
+                    else {redCaptured++;}
+                    
+                    if (canJump(toRow, toCol)) {
+                    	doubleJumpAvailable = true;
+                	  }
+                	  else {doubleJumpAvailable = false;}
+                	  
+                	  return true;
+                }
+                
+                if (middleCell.classList.contains(currentPlayer === 'red' ? 'black-king' : 'red-king')) {
+                    if (takePiece) {
+                      middleCell.innerHTML = '';
+                      middleCell.classList.remove('red-king', 'black-king');
+                    }
+                    
+                    if (currentPlayer === 'red') {blackCaptured++;}
+                    else {redCaptured++;}
+                    
+                    if (canJump(toRow, toCol)) {
+                    	doubleJumpAvailable = true;
+                	  }
+                	  else {doubleJumpAvailable = false;}
+                	  
+                	  return true;
                 }
             }
             
@@ -136,10 +303,38 @@
                 const middleCol = (fromCol + toCol) / 2;
                 const middleCell = document.getElementById(`${middleRow}-${middleCol}`);
 
-                if (middleCell.classList.contains(currentPlayer === 'red' ? 'black-piece' : 'red-piece')) { // BUG: can only jump pieces, not kings
-                    middleCell.innerHTML = '';
-                    middleCell.classList.remove('red-piece', 'black-piece', 'red-king', 'black-king');
-                    return true;
+                if (middleCell.classList.contains(currentPlayer === 'red' ? 'black-piece' : 'red-piece')) { 
+                    if (takePiece) {
+                      middleCell.innerHTML = '';
+                      middleCell.classList.remove('red-piece', 'black-piece');
+                    }
+                    
+                    if (currentPlayer === 'red') {blackCaptured++;}
+                    else {redCaptured++;}
+                    
+                    if (canJump(toRow, toCol)) {
+                    	doubleJumpAvailable = true;
+                	  }
+                	  else {doubleJumpAvailable = false;}
+                	  
+                	  return true;
+                }
+                
+                if (middleCell.classList.contains(currentPlayer === 'red' ? 'black-king' : 'red-king')) {
+                    if (takePiece) {
+                      middleCell.innerHTML = '';
+                      middleCell.classList.remove('red-king', 'black-king');
+                    }
+                    
+                    if (currentPlayer === 'red') {blackCaptured++;}
+                    else {redCaptured++;}
+                    
+                    if (canJump(toRow, toCol)) {
+                    	doubleJumpAvailable = true;
+                	  }
+                	  else {doubleJumpAvailable = false;}
+                	  
+                	  return true;
                 }
             }
             
@@ -150,6 +345,11 @@
             const fromCell = document.getElementById(`${fromRow}-${fromCol}`);
             const toCell = document.getElementById(`${toRow}-${toCol}`);
             const isKing = fromCell.classList.contains(`${currentPlayer}-king`);
+            
+            const topLeftCell = document.getElementById(`${toRow-1}-${toCol-1}`);
+            const topRightCell = document.getElementById(`${toRow-1}-${toCol+1}`);
+            const bottomLeftCell = document.getElementById(`${toRow+1}-${toCol-1}`);
+            const bottomRightCell = document.getElementById(`${toRow+1}-${toCol+1}`);
           
             toCell.innerHTML = fromCell.innerHTML;
             if (isKing === true) {toCell.classList.add(`${currentPlayer}-king`);}
@@ -169,28 +369,82 @@
                 }
             }
             
-            // add double jump option
-
-            switchPlayer();
-        }
-
-        function clearSelection() {
-            if (selectedPiece) {
-                const [row, col] = selectedPiece;
-                const cell = document.getElementById(`${row}-${col}`);
-                cell.classList.remove('selected');
+            if (doubleJumpAvailable) {
+                selectedPiece = [toRow, toCol];
+                document.getElementById(`${toRow}-${toCol}`).classList.add('selected');
+                pieceFocus = true;
             }
-            selectedPiece = null;
+            else {switchPlayer();}
         }
 
-        function switchPlayer() {
-            currentPlayer = currentPlayer === 'red' ? 'black' : 'red'; // ternary operator (if cP = red, return black, else return red)
-            clearSelection();
+        function canJump(row, col) {
+            const directions = [
+                [2, 2], [2, -2], [-2, 2], [-2, -2]
+            ];
+
+            for (const [rowOffset, colOffset] of directions) {
+                const newRow = row + rowOffset;
+                const newCol = col + colOffset;
+                if (newRow >= 0 && newRow < boardSize && newCol >= 0 && newCol < boardSize) {
+                    if (isValidMove(row, col, newRow, newCol, false)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
+
+      function clearSelection() {
+          if (selectedPiece) {
+              const [row, col] = selectedPiece;
+              const cell = document.getElementById(`${row}-${col}`);
+              cell.classList.remove('selected');
+          }
+          selectedPiece = null;
+      }
         
-        // function gameOver
+      function updateCaptureBox() {
+          for (let count = 0; count < blackCaptured; count++) {
+            
+          }
+      }
+        
+      function gameOver() {
+        remainder = boardSize % 2
+        if (blackCaptured >= (boardSize * 3) - remainder) {
+          // add black pop up
+        }
+        if (redCaptured >= (boardSize * 3) - remainder) {
+          // add red pop up
+        }
+      }
+            
 
-        createBoard();
+      function switchPlayer() {
+        isSecondMove = false;
+        gameOver();
+        currentPlayer = currentPlayer === 'red' ? 'black' : 'red';
+        updateCaptureBox();
+        document.getElementById('blackCapturedCount').innerHTML = blackCaptured;
+        document.getElementById('redCapturedCount').innerHTML = redCaptured;
+        clearSelection();
+      }
+
+      // function gameOver
+
+      //pieces counter..
+      //other options..
+
+      //END OF THE CODE...
+
+      
+      createBoard();
     </script>
-</body>
+        <!--End of Java Section ----->
+
+    </body>
+
 </html>
+
+
+
